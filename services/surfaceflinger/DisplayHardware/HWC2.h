@@ -39,6 +39,10 @@
 
 #include "PowerAdvisor.h"
 
+#ifdef USE_AML_HW_ACTIVE_MODE
+#include <utils/Mutex.h>
+#endif
+
 namespace android {
     class Fence;
     class FloatRect;
@@ -268,6 +272,9 @@ public:
     hwc2_display_t getId() const { return mId; }
     bool isConnected() const { return mIsConnected; }
     void setConnected(bool connected);  // For use by Device only
+#ifdef USE_AML_HW_ACTIVE_MODE
+    void syncConfigs();
+#endif
 
 private:
     int32_t getAttribute(hwc2_config_t configId, Attribute attribute);
@@ -294,6 +301,10 @@ private:
     DisplayType mType;
     std::unordered_map<hwc2_layer_t, std::unique_ptr<Layer>> mLayers;
     std::unordered_map<hwc2_config_t, std::shared_ptr<const Config>> mConfigs;
+#ifdef USE_AML_HW_ACTIVE_MODE
+    // protect rw access of mConfigs
+    mutable android::Mutex mConfigLock;
+#endif
 };
 
 // Convenience C++ class to access hwc2_device_t Layer functions directly.
