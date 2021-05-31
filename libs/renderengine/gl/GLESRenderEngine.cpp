@@ -1646,20 +1646,26 @@ void GLESRenderEngine::drawMesh(const Mesh& mesh) {
                               mesh.getByteStride(), mesh.getShadowParams());
     }
 
+    Dataspace outputStandard =
+            static_cast<Dataspace>(mOutputDataSpace & Dataspace::STANDARD_MASK);
+
     Description managedState = mState;
     // By default, DISPLAY_P3 is the only supported wide color output. However,
     // when HDR content is present, hardware composer may be able to handle
     // BT2020 data space, in that case, the output data space is set to be
     // BT2020_HLG or BT2020_PQ respectively. In GPU fall back we need
     // to respect this and convert non-HDR content to HDR format.
-    if (mUseColorManagement) {
+    if (mUseColorManagement && outputStandard == Dataspace::STANDARD_BT2020) {
         Dataspace inputStandard = static_cast<Dataspace>(mDataSpace & Dataspace::STANDARD_MASK);
         Dataspace inputTransfer = static_cast<Dataspace>(mDataSpace & Dataspace::TRANSFER_MASK);
+
         Dataspace outputStandard =
                 static_cast<Dataspace>(mOutputDataSpace & Dataspace::STANDARD_MASK);
         Dataspace outputTransfer =
                 static_cast<Dataspace>(mOutputDataSpace & Dataspace::TRANSFER_MASK);
+
         bool needsXYZConversion = needsXYZTransformMatrix();
+
 
         // NOTE: if the input standard of the input dataspace is not STANDARD_DCI_P3 or
         // STANDARD_BT2020, it will be  treated as STANDARD_BT709

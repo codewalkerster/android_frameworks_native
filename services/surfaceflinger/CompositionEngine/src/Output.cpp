@@ -921,8 +921,19 @@ std::optional<base::unique_fd> Output::composeSurfaces(
     clientCompositionDisplay.outputDataspace = mDisplayColorProfile->hasWideColorGamut()
             ? outputState.dataspace
             : ui::Dataspace::UNKNOWN;
+
     clientCompositionDisplay.maxLuminance =
             mDisplayColorProfile->getHdrCapabilities().getDesiredMaxLuminance();
+
+    char value[PROPERTY_VALUE_MAX];
+    property_get("vendor.hwc.fb_output_dataspace", value, "0");
+    if(atoi(value) > 0 && outputState.layerStackInternal){
+      if((atoi(value) & static_cast<int>(ui::Dataspace::STANDARD_MASK)) == static_cast<int>(ui::Dataspace::STANDARD_BT2020) &&
+         (atoi(value) & static_cast<int>(ui::Dataspace::TRANSFER_MASK)) == static_cast<int>(ui::Dataspace::TRANSFER_ST2084))
+        clientCompositionDisplay.outputDataspace = ui::Dataspace::BT2020_ITU_PQ;
+      else
+        clientCompositionDisplay.outputDataspace = ui::Dataspace::UNKNOWN;
+    }
 
     // Compute the global color transform matrix.
     if (!outputState.usesDeviceComposition && !getSkipColorTransform()) {
