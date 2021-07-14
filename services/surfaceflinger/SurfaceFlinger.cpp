@@ -341,7 +341,7 @@ SurfaceFlinger::SurfaceFlinger(Factory& factory) : SurfaceFlinger(factory, SkipI
 
     hasWideColorDisplay = has_wide_color_display(false);
 
-    useColorManagement = use_color_management(true);
+    useColorManagement = use_color_management(false);
 
     mDefaultCompositionDataspace =
             static_cast<ui::Dataspace>(default_composition_dataspace(Dataspace::V0_SRGB));
