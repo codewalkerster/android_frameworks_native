@@ -107,9 +107,12 @@ uint32_t CursorButtonAccumulator::getButtonState() const {
     if (mBtnRight) {
         char targetProduct[PROPERTY_VALUE_MAX] = {0};
         property_get("ro.target.product", targetProduct, "");
-        if (strcmp(targetProduct, "box") == 0
+        char mouseRight[PROPERTY_VALUE_MAX] = {0};
+        property_get("persist.mouse.right", mouseRight, "secondary");
+        if (strcmp(mouseRight, "back") == 0 &&
+                (strcmp(targetProduct, "box") == 0
                 || strcmp(targetProduct, "atv") == 0
-                || strcmp(targetProduct, "tablet") == 0) {
+                || strcmp(targetProduct, "tablet") == 0)) {
             result |= AMOTION_EVENT_BUTTON_BACK;
         } else {
             result |= AMOTION_EVENT_BUTTON_SECONDARY;
