@@ -119,7 +119,8 @@ uint32_t CursorButtonAccumulator::getButtonState() const {
         }
     }
     if (mBtnMiddle) {
-        result |= AMOTION_EVENT_BUTTON_TERTIARY;
+        //result |= AMOTION_EVENT_BUTTON_TERTIARY;
+        result |= AMOTION_EVENT_BUTTON_BACK;
     }
     if (mBtnBack || mBtnSide) {
         result |= AMOTION_EVENT_BUTTON_BACK;
