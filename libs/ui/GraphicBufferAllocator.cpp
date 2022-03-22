@@ -54,7 +54,7 @@ void GraphicBufferAllocator::dump(String8& result) const
 {
     Mutex::Autolock _l(sLock);
     KeyedVector<buffer_handle_t, alloc_rec_t>& list(sAllocList);
-    size_t total = 0;
+    uint64_t total = 0;
     const size_t SIZE = 4096;
     char buffer[SIZE];
     snprintf(buffer, SIZE, "Allocated buffers:\n");
