@@ -277,6 +277,22 @@ SurfaceFlinger::SurfaceFlinger() : SurfaceFlinger(SkipInitialization) {
         getDisplayOrientation< V1_1::ISurfaceFlingerConfigs, &V1_1::ISurfaceFlingerConfigs::primaryDisplayOrientation>(
             V1_1::DisplayOrientation::ORIENTATION_0);
 
+    char sf_orientation[PROPERTY_VALUE_MAX];
+    int32_t sf_rotation;
+
+    property_get("ro.surface_flinger.primary_display_orientation", sf_orientation, "ORIENTATION_0");
+    if (strcmp(sf_orientation, "ORIENTATION_90") == 0) {
+        sf_rotation = 1;
+    } else if (strcmp(sf_orientation, "ORIENTATION_180") == 0) {
+        sf_rotation = 2;
+    } else if (strcmp(sf_orientation, "ORIENTATION_270") == 0) {
+        sf_rotation = 3;
+    } else {
+        sf_rotation = 0;
+    }
+
+    primaryDisplayOrientation = (V1_1::DisplayOrientation)sf_rotation;
+
     switch (primaryDisplayOrientation) {
         case V1_1::DisplayOrientation::ORIENTATION_90:
             mPrimaryDisplayOrientation = DisplayState::eOrientation90;
