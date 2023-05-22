@@ -287,11 +287,6 @@ std::vector<std::shared_ptr<const HWC2::Display::Config>>
         HWComposer::getConfigs(int32_t displayId) const {
     RETURN_IF_INVALID_DISPLAY(displayId, {});
 
-#ifdef USE_AML_HW_ACTIVE_MODE
-    /* Resync sf with platform now to ensure we dont run into weird things*/
-    mDisplayData[displayId].hwcDisplay->syncConfigs();
-#endif
-
     auto& displayData = mDisplayData[displayId];
     auto configs = mDisplayData[displayId].hwcDisplay->getConfigs();
 
@@ -311,11 +306,6 @@ std::vector<std::shared_ptr<const HWC2::Display::Config>>
 std::shared_ptr<const HWC2::Display::Config>
         HWComposer::getActiveConfig(int32_t displayId) const {
     RETURN_IF_INVALID_DISPLAY(displayId, nullptr);
-
-#ifdef USE_AML_HW_ACTIVE_MODE
-    /* Resync sf with platform now to ensure we dont run into weird things*/
-    mDisplayData[displayId].hwcDisplay->syncConfigs();
-#endif
 
     std::shared_ptr<const HWC2::Display::Config> config;
     auto error = mDisplayData[displayId].hwcDisplay->getActiveConfig(&config);
@@ -339,10 +329,6 @@ int HWComposer::getActiveConfigIndex(int32_t displayId) const {
         ALOGV("getActiveConfigIndex: Attempted to access invalid display %d", displayId);
         return -1;
     }
-#ifdef USE_AML_HW_ACTIVE_MODE
-    /* Resync sf with platform now to ensure we dont run into weird things*/
-    mDisplayData[displayId].hwcDisplay->syncConfigs();
-#endif
     int index;
     auto error = mDisplayData[displayId].hwcDisplay->getActiveConfigIndex(&index);
     if (error == HWC2::Error::BadConfig) {
