@@ -5033,7 +5033,8 @@ uint32_t SurfaceFlinger::setClientStateLocked(const FrameTimelineInfo& frameTime
         if (layer->setApi(s.api)) flags |= eTraversalNeeded;
     }
     if (what & layer_state_t::eSidebandStreamChanged) {
-        if (layer->setSidebandStream(s.sidebandStream)) flags |= eTraversalNeeded;
+        if (layer->setSidebandStream(s.sidebandStream, frameTimelineInfo, postTime))
+            flags |= eTraversalNeeded;
     }
     if (what & layer_state_t::eInputInfoChanged) {
         layer->setInputInfo(*s.windowInfoHandle->getInfo());
@@ -5271,7 +5272,8 @@ uint32_t SurfaceFlinger::updateLayerCallbacksAndStats(const FrameTimelineInfo& f
         if (layer->setCrop(s.crop)) flags |= eTraversalNeeded;
     }
     if (what & layer_state_t::eSidebandStreamChanged) {
-        if (layer->setSidebandStream(s.sidebandStream)) flags |= eTraversalNeeded;
+        if (layer->setSidebandStream(s.sidebandStream, frameTimelineInfo, postTime))
+            flags |= eTraversalNeeded;
     }
     if (what & layer_state_t::eBufferChanged) {
         std::optional<ui::Transform::RotationFlags> transformHint = std::nullopt;
