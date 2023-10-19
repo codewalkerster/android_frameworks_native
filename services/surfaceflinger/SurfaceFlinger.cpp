@@ -530,6 +530,16 @@ sp<IBinder> SurfaceFlinger::createDisplay(const String8& displayName, bool secur
     // This is to ensure that only system and graphics can request to create a secure
     // display. Secure displays can show secure content so we add an additional restriction on it.
     const int uid = IPCThreadState::self()->getCallingUid();
+    bool inWhiteList = false;
+    for (std::string s : tokens) {
+        if (std::string(displayName.string()).find(s) != std::string::npos) {
+            inWhiteList = true;
+            ATRACE_FORMAT("enableHalVirtualDisplays: %s", displayName.c_str());
+            break;
+        }
+    }
+    enableHalVirtualDisplays(inWhiteList);
+
     if (secure && uid != AID_GRAPHICS && uid != AID_SYSTEM) {
         ALOGE("Only privileged processes can create a secure display");
         return nullptr;
@@ -581,6 +591,8 @@ void SurfaceFlinger::destroyDisplay(const sp<IBinder>& displayToken) {
 
 void SurfaceFlinger::enableHalVirtualDisplays(bool enable) {
     auto& generator = mVirtualDisplayIdGenerators.hal;
+    mAlwaysReCompose = enable;
+
     if (!generator && enable) {
         ALOGI("Enabling HAL virtual displays");
         generator.emplace(getHwComposer().getMaxVirtualDisplayCount());
@@ -848,6 +860,17 @@ void SurfaceFlinger::init() FTL_FAKE_GUARD(kMainThreadContext) {
 
     if (base::GetBoolProperty("debug.sf.enable_hwc_vds"s, false)) {
         enableHalVirtualDisplays(true);
+    }
+
+    char displaysConfigs[PROPERTY_VALUE_MAX];
+    property_get("debug.sf.display_white_lists", displaysConfigs, "");
+    char *token;
+    token = strtok(displaysConfigs, ":");
+    int i = 0;
+    while (token != NULL) {
+        tokens.push_back(std::string(token));
+        i++;
+        token = strtok(NULL, ":");
     }
 
     // Process hotplug for displays connected at boot.
@@ -2597,7 +2620,8 @@ CompositeResultsPerDisplay SurfaceFlinger::composite(
     refreshArgs.scheduledFrameTime = mScheduler->getScheduledFrameTime();
     refreshArgs.expectedPresentTime = pacesetterTarget.expectedPresentTime().ns();
     refreshArgs.hasTrustedPresentationListener = mNumTrustedPresentationListeners > 0;
-
+    refreshArgs.alwaysReCompose = mAlwaysReCompose;
+ 
     // Store the present time just before calling to the composition engine so we could notify
     // the scheduler.
     const auto presentTime = systemTime();

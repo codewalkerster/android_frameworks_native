@@ -167,8 +167,8 @@ status_t VirtualDisplaySurface::prepareFrame(CompositionType compositionType) {
         // If we just switched *to* GPU-only mode, we'll change the
         // format/usage and get a new buffer when the GPU driver calls
         // dequeueBuffer().
-        mOutputFormat = mDefaultOutputFormat;
-        mOutputUsage = GRALLOC_USAGE_HW_COMPOSER;
+        mOutputFormat = PIXEL_FORMAT_RGBA_8888;
+        mOutputUsage = GRALLOC_USAGE_HW_COMPOSER | GRALLOC_USAGE_SW_WRITE_MASK | GRALLOC_USAGE_SW_READ_MASK;
         refreshOutputBuffer();
     }
 
@@ -317,6 +317,9 @@ status_t VirtualDisplaySurface::setAsyncMode(bool async) {
 status_t VirtualDisplaySurface::dequeueBuffer(Source source,
         PixelFormat format, uint64_t usage, int* sslot, sp<Fence>* fence) {
     LOG_ALWAYS_FATAL_IF(GpuVirtualDisplayId::tryCast(mDisplayId).has_value());
+    //The frame data is copied through the CPU
+    usage |= GRALLOC_USAGE_SW_WRITE_MASK|GRALLOC_USAGE_SW_READ_MASK;
+    format = PIXEL_FORMAT_RGBA_8888;
 
     status_t result =
             mSource[source]->dequeueBuffer(sslot, fence, mSinkBufferWidth, mSinkBufferHeight,
@@ -635,10 +638,10 @@ status_t VirtualDisplaySurface::refreshOutputBuffer() {
     // until after GPU calls queueBuffer(). So here we just set the buffer
     // (for use in HWC prepare) but not the fence; we'll call this again with
     // the proper fence once we have it.
-    const auto halDisplayId = HalVirtualDisplayId::tryCast(mDisplayId);
-    LOG_FATAL_IF(!halDisplayId);
-    result = mHwc.setOutputBuffer(*halDisplayId, Fence::NO_FENCE,
-                                  mProducerBuffers[mOutputProducerSlot]);
+    //const auto halDisplayId = HalVirtualDisplayId::tryCast(mDisplayId);
+    //LOG_FATAL_IF(!halDisplayId);
+    //result = mHwc.setOutputBuffer(*halDisplayId, Fence::NO_FENCE,
+    //                              mProducerBuffers[mOutputProducerSlot]);
 
     return result;
 }
