@@ -16,6 +16,7 @@
 
 #include "CursorButtonAccumulator.h"
 
+#include <cutils/properties.h>
 #include "EventHub.h"
 #include "InputDevice.h"
 
@@ -84,8 +85,13 @@ uint32_t CursorButtonAccumulator::getButtonState() const {
         result |= AMOTION_EVENT_BUTTON_PRIMARY;
     }
     if (mBtnRight) {
-        //ODROID
-        result |= AMOTION_EVENT_BUTTON_BACK;
+        char mouseRight[PROPERTY_VALUE_MAX] = {0};
+        property_get("persist.mouse.right", mouseRight, "secondary");
+        if (strcmp(mouseRight, "back") == 0) {
+            result |= AMOTION_EVENT_BUTTON_BACK;
+        } else {
+            result |= AMOTION_EVENT_BUTTON_SECONDARY;
+        }
     }
     if (mBtnMiddle) {
         result |= AMOTION_EVENT_BUTTON_TERTIARY;
