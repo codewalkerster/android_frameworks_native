@@ -346,6 +346,8 @@ public:
         return sActiveDisplayRotationFlags;
     }
 
+    bool mIsHotPlugProcess = false;
+
 protected:
     // We're reference counted, never destroy SurfaceFlinger directly
     virtual ~SurfaceFlinger();

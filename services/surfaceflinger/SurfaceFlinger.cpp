@@ -2366,6 +2366,7 @@ bool SurfaceFlinger::updateLayerSnapshots(VsyncId vsyncId, frontend::Update& upd
 
 bool SurfaceFlinger::commit(PhysicalDisplayId pacesetterId,
                             const scheduler::FrameTargets& frameTargets) {
+    mIsHotPlugProcess = false;
     const scheduler::FrameTarget& pacesetterFrameTarget = *frameTargets.get(pacesetterId)->get();
 
     const VsyncId vsyncId = pacesetterFrameTarget.vsyncId();
@@ -2482,6 +2483,15 @@ bool SurfaceFlinger::commit(PhysicalDisplayId pacesetterId,
         if (mLayerLifecycleManagerEnabled) {
             mustComposite |=
                     updateLayerSnapshots(vsyncId, updates, flushTransactions, transactionsAreEmpty);
+        }
+
+        {
+            Mutex::Autolock lock(mStateLock);
+            if (mIsHotPlugProcess) {
+                ALOGD("skip this commit to avoid crash");
+                mScheduler->scheduleFrame();
+                return false;
+            }
         }
 
         if (transactionFlushNeeded()) {
@@ -3488,6 +3498,7 @@ void SurfaceFlinger::processDisplayAdded(const wp<IBinder>& displayToken,
 
             // For hotplug reconnect, renew the registration since display modes have been reloaded.
             mScheduler->registerDisplay(displayId, display->holdRefreshRateSelector());
+            mIsHotPlugProcess = true;
         }
 
         dispatchDisplayHotplugEvent(displayId, true);
