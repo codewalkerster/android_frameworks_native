@@ -696,7 +696,11 @@ private:
     status_t setActiveModeFromBackdoor(const sp<display::DisplayToken>&, DisplayModeId);
 
     void initiateDisplayModeChanges() REQUIRES(mStateLock, kMainThreadContext);
-    void finalizeDisplayModeChange(DisplayDevice&) REQUIRES(mStateLock, kMainThreadContext);
+
+    // Returns whether the commit stage should proceed. The return value is ignored when finalizing
+    // immediate mode changes, which happen toward the end of the commit stage.
+    // TODO: b/355427258 - Remove the return value once the `synced_resolution_switch` flag is live.
+    bool finalizeDisplayModeChange(DisplayDevice&) REQUIRES(mStateLock, kMainThreadContext);
 
     void clearDesiredActiveModeState(const sp<DisplayDevice>&) REQUIRES(mStateLock);
     // Called when active mode is no longer is progress

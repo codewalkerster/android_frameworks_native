@@ -1331,7 +1331,7 @@ status_t SurfaceFlinger::setActiveModeFromBackdoor(const sp<display::DisplayToke
     return future.get();
 }
 
-void SurfaceFlinger::finalizeDisplayModeChange(DisplayDevice& display) {
+bool SurfaceFlinger::finalizeDisplayModeChange(DisplayDevice& display) {
     const auto displayId = display.getPhysicalId();
     ATRACE_NAME(ftl::Concat(__func__, ' ', displayId.value).c_str());
 
@@ -1339,7 +1339,7 @@ void SurfaceFlinger::finalizeDisplayModeChange(DisplayDevice& display) {
     if (!upcomingModeInfo.modeOpt) {
         // There is no pending mode change. This can happen if the active
         // display changed and the mode change happened on a different display.
-        return;
+        return true;
     }
 
     if (display.getActiveMode().modePtr->getResolution() !=
@@ -1351,8 +1351,8 @@ void SurfaceFlinger::finalizeDisplayModeChange(DisplayDevice& display) {
         state.physical->activeMode = upcomingModeInfo.modeOpt->modePtr.get();
         processDisplayChangesLocked();
 
-        // processDisplayChangesLocked will update all necessary components so we're done here.
-        return;
+        // The DisplayDevice has been destroyed, so abort the commit for the now dead FrameTargeter.
+        return false;
     }
 
     const auto& activeMode = *upcomingModeInfo.modeOpt;
@@ -1367,6 +1367,8 @@ void SurfaceFlinger::finalizeDisplayModeChange(DisplayDevice& display) {
     if (upcomingModeInfo.event != scheduler::DisplayModeEvent::None) {
         dispatchDisplayModeChangeEvent(displayId, activeMode);
     }
+
+    return true;
 }
 
 void SurfaceFlinger::clearDesiredActiveModeState(const sp<DisplayDevice>& display) {
@@ -2405,7 +2407,10 @@ bool SurfaceFlinger::commit(PhysicalDisplayId pacesetterId,
             const auto display = getDisplayDeviceLocked(id);
 
             if (display && display->isModeSetPending()) {
-                finalizeDisplayModeChange(*display);
+                if (!finalizeDisplayModeChange(*display)) {
+                    mScheduler->scheduleFrame();
+                        return false;
+                }
             }
         }
     }
