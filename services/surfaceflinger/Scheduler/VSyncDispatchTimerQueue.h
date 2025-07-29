@@ -146,6 +146,10 @@ private:
     void cancelTimer() REQUIRES(mMutex);
     ScheduleResult scheduleLocked(CallbackToken, ScheduleTiming) REQUIRES(mMutex);
 
+    // During VSyncDispatchTimerQueue deconstruction, skip timerCallback to
+    // avoid crash
+    bool mRunning = true;
+
     static constexpr nsecs_t kInvalidTime = std::numeric_limits<int64_t>::max();
     std::unique_ptr<TimeKeeper> const mTimeKeeper;
     VsyncSchedule::TrackerPtr mTracker;
