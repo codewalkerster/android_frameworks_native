@@ -146,6 +146,8 @@ private:
     void cancelTimer() REQUIRES(mMutex);
     ScheduleResult scheduleLocked(CallbackToken, ScheduleTiming) REQUIRES(mMutex);
 
+    std::mutex mutable mMutex;
+
     // During VSyncDispatchTimerQueue deconstruction, skip timerCallback to
     // avoid crash
     bool mRunning = true;
@@ -156,7 +158,6 @@ private:
     nsecs_t const mTimerSlack;
     nsecs_t const mMinVsyncDistance;
 
-    std::mutex mutable mMutex;
     size_t mCallbackToken GUARDED_BY(mMutex) = 0;
 
     CallbackMap mCallbacks GUARDED_BY(mMutex);
