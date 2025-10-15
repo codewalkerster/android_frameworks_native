@@ -929,7 +929,8 @@ void TouchInputMapper::configureInputDevice(nsecs_t when, bool* outResetNeeded) 
     } else if (!newViewportOpt->isActive) {
         ALOGI("Disabling %s (device %i) because the associated viewport is not active",
               getDeviceName().c_str(), getDeviceId());
-        mDeviceMode = DeviceMode::DISABLED;
+        //ODROID
+        //mDeviceMode = DeviceMode::DISABLED;
     }
 
     // Raw width and height in the natural orientation.
